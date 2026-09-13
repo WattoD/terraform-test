@@ -1,15 +1,18 @@
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
-  tags                 = { Name = "${var.project}-vpc" }
+  tags                 = merge(local.common_tags, { Name = "${local.name_prefix}-vpc" })
 }
 
-resource "aws_subnet" "public" {
+resource "aws_subnet" "net" {
+  for_each = var.subnets
+
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.subnet_cidr
-  availability_zone       = "${var.region}a"
-  map_public_ip_on_launch = true
-  tags                    = { Name = "${var.project}-public" }
+  cidr_block              = cidrsubnet(var.vpc_cidr, 8, each.value.netnum)
+  availability_zone       = each.value.az
+  map_public_ip_on_launch = each.value.map_public_ip
+
+  tags = merge(local.common_tags, { Name = "${local.name_prefix}-${each.key}" })
 }
 
 resource "aws_internet_gateway" "igw" {
@@ -29,6 +32,11 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
+  subnet_id      = aws_subnet.net["public-a"].id
   route_table_id = aws_route_table.public.id
+}
+
+moved {
+  from = aws_subnet.this
+  to   = aws_subnet.net
 }

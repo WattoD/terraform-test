@@ -6,6 +6,12 @@ terraform {
       version = "~> 6.0"
     }
   }
+
+  backend "s3" {
+    bucket = "tf-state-bucket-dodon-2026"
+    key    = "tf-shop/terraform.tfstate"
+    region = "eu-central-1"
+  }
 }
 
 provider "aws" {
