@@ -3,14 +3,16 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 6.0"
+      version = ">= 5.0"
     }
   }
 
-  backend "s3" {
-    bucket = "tf-state-bucket-dodon-2026"
-    key    = "tf-shop/terraform.tfstate"
-    region = "eu-central-1"
+  cloud {
+    organization = "dodon-org"
+
+    workspaces {
+      name = "tf-shop-dev"
+    }
   }
 }
 
@@ -19,11 +21,14 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "assets" {
-  bucket = "tf-shop-assets-dodon-2026"
+  bucket = "tf-shop-assets-dodon-2026-${terraform.workspace}"
 
-  tags = {
-    Name      = "tf-shop assets"
-    ManagedBy = "terraform"
-    Owner     = "Dodon"
-  }
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "tf-shop assets ${terraform.workspace}"
+    }
+  )
 }
+
+# Test OIDC PR check
