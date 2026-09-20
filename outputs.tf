@@ -7,5 +7,6 @@ output "url" {
 }
 
 output "subnet_ids" {
-  value = { for k, s in aws_subnet.net : k => s.id }
+  description = "Map of subnet keys to subnet IDs"
+  value       = module.network.subnet_ids
 }
