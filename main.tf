@@ -31,4 +31,11 @@ resource "aws_s3_bucket" "assets" {
   )
 }
 
-# Test OIDC PR check
+resource "aws_s3_bucket" "existing" {
+  bucket = "my-devops-imported-bucket-2026"
+}
+
+import {
+  to = aws_s3_bucket.existing
+  id = "my-devops-imported-bucket-2026"
+}
